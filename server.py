@@ -9,6 +9,7 @@ from media_utils import downsample_video, transcribe_audio, check_ffmpeg, mix_au
 from storage_utils import upload_to_r2, download_from_r2
 from pydantic import BaseModel
 from typing import Optional, Dict
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
