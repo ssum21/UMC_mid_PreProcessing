@@ -4,6 +4,9 @@ import whisper
 import torch
 import shutil
 
+# Add current directory to PATH so local ffmpeg binary can be found
+os.environ["PATH"] += os.pathsep + os.getcwd()
+
 def check_ffmpeg():
     path = shutil.which("ffmpeg")
     if path:
