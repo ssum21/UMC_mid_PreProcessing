@@ -42,7 +42,7 @@ def downsample_video(input_path: str, output_path: str, height: int = 360):
         print(f"FFmpeg error: {e.stderr.decode('utf8')}")
         raise
 
-def mix_audio_video(video_path: str, audio_path: str, output_path: str, start_time: float = 0.0, audio_volume: float = 0.5):
+def mix_audio_video(video_path: str, audio_path: str, output_path: str, start_time: float = 0.0, audio_volume: float = 0.7):
     """
     Mixes audio into video using ffmpeg-python.
     
@@ -70,7 +70,7 @@ def mix_audio_video(video_path: str, audio_path: str, output_path: str, start_ti
         music_input = ffmpeg.input(audio_path)
         
         # 2. Process Music
-        # Apply volume
+        # Apply volume to music
         music_processed = music_input.audio.filter('volume', audio_volume)
         
         # Apply delay if start_time > 0

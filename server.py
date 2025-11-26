@@ -37,7 +37,7 @@ class FinalizeRequest(BaseModel):
     video_object_name: str
     music_url: str
     start_time: float = 0.0
-    audio_volume: float = 0.5
+    audio_volume: float = 0.7
     music_title: Optional[str] = None
     music_image: Optional[str] = None
 
