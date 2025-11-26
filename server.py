@@ -37,7 +37,9 @@ class FinalizeRequest(BaseModel):
     video_object_name: str
     music_url: str
     start_time: float = 0.0
-    audio_volume: float = 0.3
+    audio_volume: float = 0.5
+    music_title: Optional[str] = None
+    music_image: Optional[str] = None
 
 if not GEMINI_API_KEY:
     print("WARNING: GEMINI_API_KEY not found in environment variables.")
@@ -174,7 +176,13 @@ async def receive_music(request: MusicCallbackRequest, background_tasks: Backgro
 async def get_task_status(task_id: str):
     if task_id not in tasks:
         raise HTTPException(status_code=404, detail="Task not found")
-    return tasks[task_id]
+    
+    task_data = tasks[task_id]
+    # Debug log to see what we are sending
+    if task_data.get("status") in ["music_ready", "completed", "failed"]:
+        print(f"[DEBUG] Status for {task_id}: {task_data}")
+        
+    return task_data
 
 async def process_auto_mixing(task_id: str):
     video_path = None
@@ -244,6 +252,8 @@ async def finalize_video(request: FinalizeRequest, background_tasks: BackgroundT
             "status": "mixing",
             "video_object_name": request.video_object_name,
             "music_url": request.music_url,
+            "music_title": request.music_title,
+            "music_image": request.music_image,
             "final_video_url": None
         }
         
