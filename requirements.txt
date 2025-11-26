@@ -8,3 +8,4 @@ openai-whisper
 ffmpeg-python
 torch
 python-dotenv
+boto3

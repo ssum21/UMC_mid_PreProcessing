@@ -42,6 +42,40 @@ def downsample_video(input_path: str, output_path: str, height: int = 360):
         print(f"FFmpeg error: {e.stderr.decode('utf8')}")
         raise
 
+def mix_audio_video(video_path: str, audio_path: str, output_path: str, start_time: float = 0.0, audio_volume: float = 0.3):
+    """
+    Mixes the audio into the video at the specified start time with the given volume.
+    The original video audio is kept.
+    """
+    try:
+        print(f"Mixing audio {audio_path} into {video_path} at {start_time}s with volume {audio_volume}...")
+        
+        input_video = ffmpeg.input(video_path)
+        input_audio = ffmpeg.input(audio_path)
+        
+        # Delay the audio start
+        delayed_audio = input_audio.filter('adelay', f"{int(start_time * 1000)}|{int(start_time * 1000)}")
+        
+        # Adjust volume
+        adjusted_audio = delayed_audio.filter('volume', audio_volume)
+        
+        # Mix with original audio
+        # We assume the video has audio. If not, we might need a check.
+        # For simplicity, we mix the original video audio (0:a) with the new audio.
+        mixed_audio = ffmpeg.filter([input_video.audio, adjusted_audio], 'amix', inputs=2, duration='first')
+        
+        (
+            ffmpeg
+            .output(input_video.video, mixed_audio, output_path, vcodec='copy', acodec='aac')
+            .overwrite_output()
+            .run(capture_stdout=True, capture_stderr=True)
+        )
+        print("Mixing complete.")
+        return output_path
+    except ffmpeg.Error as e:
+        print(f"FFmpeg error: {e.stderr.decode('utf8')}")
+        raise
+
 def transcribe_audio(video_path: str, model_size: str = "base"):
     """
     Extracts audio and transcribes it using OpenAI Whisper.
