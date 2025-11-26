@@ -2,12 +2,28 @@ import os
 import ffmpeg
 import whisper
 import torch
+import shutil
+
+def check_ffmpeg():
+    path = shutil.which("ffmpeg")
+    if path:
+        print(f"✅ FFmpeg found at: {path}")
+        return True
+    else:
+        print("❌ FFmpeg NOT found in PATH")
+        # Try to find it in common locations
+        common_paths = ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg"]
+        for p in common_paths:
+            if os.path.exists(p):
+                print(f"⚠️ Found ffmpeg at {p} but it's not in PATH")
+        return False
 
 def downsample_video(input_path: str, output_path: str, height: int = 360):
     """
     Downsamples the video to the specified height while maintaining aspect ratio.
     """
     try:
+        check_ffmpeg()
         print(f"Downsampling video to {height}p: {input_path} -> {output_path}")
         (
             ffmpeg
