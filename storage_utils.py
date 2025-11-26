@@ -56,6 +56,24 @@ def download_from_r2(object_name: str, download_path: str):
         print(f"Error downloading from R2: {e}")
         raise
 
+def generate_presigned_url(object_name: str, expiration: int = 3600) -> str:
+    """
+    Generates a presigned URL for an R2 object.
+    
+    :param object_name: The name of the object (key) in the bucket
+    :param expiration: Time in seconds for the URL to remain valid (default: 1 hour)
+    :return: The presigned URL
+    """
+    try:
+        response = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': R2_BUCKET_NAME,
+                                                            'Key': object_name},
+                                                    ExpiresIn=expiration)
+        return response
+    except Exception as e:
+        print(f"Error generating presigned URL: {e}")
+        return None
+
 def generate_presigned_url(object_name: str, expiration=3600):
     """
     Generate a presigned URL to share an S3 object

@@ -6,7 +6,7 @@ import uuid
 import shutil
 from video_Processor import GeminiVideoAnalyzer
 from media_utils import downsample_video, transcribe_audio, check_ffmpeg, mix_audio_video
-from storage_utils import upload_to_r2, download_from_r2
+from storage_utils import upload_to_r2, download_from_r2, generate_presigned_url
 from pydantic import BaseModel
 from typing import Optional, Dict
 from dotenv import load_dotenv
@@ -286,12 +286,12 @@ async def process_finalization(request: FinalizeRequest, task_id: str):
         final_object_name = f"final/{output_filename}"
         upload_to_r2(output_path, final_object_name)
         
-        # Construct public URL if possible
-        final_url = f"{os.environ.get('R2_ENDPOINT_URL')}/{os.environ.get('R2_BUCKET_NAME')}/{final_object_name}"
+        # Generate Presigned URL
+        final_url = generate_presigned_url(final_object_name)
         
         if task_id in tasks:
             tasks[task_id]["status"] = "completed"
-            tasks[task_id]["final_video_url"] = final_object_name
+            tasks[task_id]["final_video_url"] = final_url
         
         print(f"Finalization complete. Uploaded to {final_object_name}")
         
