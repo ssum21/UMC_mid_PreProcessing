@@ -141,7 +141,7 @@ class GeminiVideoAnalyzer:
                     "prompt": "Lyrics or music description based on video mood and content (Max 3000 chars). If instrumental is true, describe style; if false, include lyrics.",
                     "style": "Music style (e.g., Pop, Electronic, Jazz). Max 1000 chars.",
                     "title": "Music title (Max 80 chars)",
-                    "instrumental": true, 
+                    "instrumental": false, 
                     "customMode": true,
                     "model": "V5",
                     "callBackUrl": "https://example.com/callback",
@@ -153,8 +153,8 @@ class GeminiVideoAnalyzer:
                 }}
 
                 Output ONLY valid JSON. No additional explanation.
-                Set instrumental to true if the video has a lot of dialogue or suits background music, false if it suits a song with lyrics.
-                If instrumental is false, include lyrics in the prompt.
+                Set instrumental to false (include lyrics) unless the video has heavy dialogue that clashes with vocals.
+                If instrumental is false, YOU MUST generate creative lyrics in the 'prompt' field based on the video content.
                 Include specific genre and mood in style.
                 """
         else:
