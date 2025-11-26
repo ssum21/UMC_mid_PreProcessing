@@ -54,7 +54,9 @@ def transcribe_audio(video_path: str, model_size: str = "base"):
     
     try:
         model = whisper.load_model(model_size, device=device)
-        result = model.transcribe(video_path)
+        # Set fp16 based on device
+        fp16 = False if device == "cpu" else True
+        result = model.transcribe(video_path, fp16=fp16)
         transcript = result['text']
         print(f"Transcription complete. Length: {len(transcript)} chars")
         return transcript
