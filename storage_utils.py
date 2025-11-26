@@ -11,12 +11,15 @@ R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID")
 R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY")
 R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME")
 
+from botocore.config import Config
+
 def get_s3_client():
     return boto3.client(
         's3',
         endpoint_url=R2_ENDPOINT_URL,
         aws_access_key_id=R2_ACCESS_KEY_ID,
-        aws_secret_access_key=R2_SECRET_ACCESS_KEY
+        aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+        config=Config(signature_version='s3v4')
     )
 
 def upload_to_r2(file_path: str, object_name: str = None) -> str:
@@ -31,8 +34,6 @@ def upload_to_r2(file_path: str, object_name: str = None) -> str:
     try:
         s3_client.upload_file(file_path, R2_BUCKET_NAME, object_name)
         print(f"Successfully uploaded {file_path} to R2 bucket {R2_BUCKET_NAME} as {object_name}")
-        # Return the object name or a constructed URL if you have a custom domain
-        # For now, we'll return the object name which is sufficient for internal reference
         return object_name 
     except FileNotFoundError:
         print(f"The file was not found: {file_path}")
@@ -64,6 +65,7 @@ def generate_presigned_url(object_name: str, expiration: int = 3600) -> str:
     :param expiration: Time in seconds for the URL to remain valid (default: 1 hour)
     :return: The presigned URL
     """
+    s3_client = get_s3_client()
     try:
         response = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': R2_BUCKET_NAME,
@@ -73,18 +75,3 @@ def generate_presigned_url(object_name: str, expiration: int = 3600) -> str:
     except Exception as e:
         print(f"Error generating presigned URL: {e}")
         return None
-
-def generate_presigned_url(object_name: str, expiration=3600):
-    """
-    Generate a presigned URL to share an S3 object
-    """
-    s3_client = get_s3_client()
-    try:
-        response = s3_client.generate_presigned_url('get_object',
-                                                    Params={'Bucket': R2_BUCKET_NAME,
-                                                            'Key': object_name},
-                                                    ExpiresIn=expiration)
-    except Exception as e:
-        print(e)
-        return None
-    return response
