@@ -82,6 +82,8 @@ async def process_and_send_to_n8n(file_path: str, filename: str, webhook_url: st
 
     except Exception as e:
         print(f"Error processing video: {e}")
+        tasks[task_id]["status"] = "failed"
+        tasks[task_id]["error"] = str(e)
     finally:
         # Cleanup temp files
         if os.path.exists(file_path):
