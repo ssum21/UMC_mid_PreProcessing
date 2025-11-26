@@ -292,4 +292,3 @@ def health_check():
 @app.on_event("startup")
 async def startup_event():
     check_ffmpeg()
-```
