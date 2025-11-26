@@ -140,10 +140,14 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile = Fi
             os.remove(temp_path)
         raise HTTPException(status_code=500, detail=str(e))
 
+class MusicItem(BaseModel):
+    title: str
+    url: str
+    image: str
+
 class MusicCallbackRequest(BaseModel):
     task_id: str
-    music_url: str
-    video_object_name: Optional[str] = None
+    music_list: list[MusicItem]
 
 @app.post("/api/receive-music")
 async def receive_music(request: MusicCallbackRequest, background_tasks: BackgroundTasks):
@@ -155,16 +159,16 @@ async def receive_music(request: MusicCallbackRequest, background_tasks: Backgro
     if task_id not in tasks:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    print(f"Received music for task {task_id}: {request.music_url}")
+    if not request.music_list:
+        raise HTTPException(status_code=400, detail="No music generated")
+
+    print(f"Received {len(request.music_list)} songs for task {task_id}")
     
     # Update task
-    tasks[task_id]["status"] = "mixing"
-    tasks[task_id]["music_url"] = request.music_url
+    tasks[task_id]["status"] = "music_ready"
+    tasks[task_id]["music_list"] = [m.dict() for m in request.music_list]
     
-    # Start mixing
-    background_tasks.add_task(process_auto_mixing, task_id)
-    
-    return {"message": "Music received, mixing started"}
+    return {"message": "Music received, waiting for selection"}
 
 @app.get("/api/status/{task_id}")
 async def get_task_status(task_id: str):
@@ -234,7 +238,15 @@ async def finalize_video(request: FinalizeRequest, background_tasks: BackgroundT
     """
     try:
         # Generate a unique task ID for tracking (optional)
+        # Create task
         task_id = str(uuid.uuid4())
+        tasks[task_id] = {
+            "status": "mixing",
+            "video_object_name": request.video_object_name,
+            "music_url": request.music_url,
+            "final_video_url": None
+        }
+        
         print(f"Received finalization request: {request}")
         
         # We'll do this in a background task too, to not block
@@ -274,13 +286,20 @@ async def process_finalization(request: FinalizeRequest, task_id: str):
         final_object_name = f"final/{output_filename}"
         upload_to_r2(output_path, final_object_name)
         
-        print(f"Finalization complete. Uploaded to {final_object_name}")
+        # Construct public URL if possible
+        final_url = f"{os.environ.get('R2_ENDPOINT_URL')}/{os.environ.get('R2_BUCKET_NAME')}/{final_object_name}"
         
-        # Here you might want to notify the frontend or DB that it's done
-        # For now, we just log it.
+        if task_id in tasks:
+            tasks[task_id]["status"] = "completed"
+            tasks[task_id]["final_video_url"] = final_object_name
+        
+        print(f"Finalization complete. Uploaded to {final_object_name}")
         
     except Exception as e:
         print(f"Error in finalization task {task_id}: {e}")
+        if task_id in tasks:
+            tasks[task_id]["status"] = "failed"
+            tasks[task_id]["error"] = str(e)
     finally:
         # Cleanup
         for p in [video_path, music_path, output_path]:
