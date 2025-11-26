@@ -198,7 +198,7 @@ async def process_auto_mixing(task_id: str):
         # 3. Mix Audio and Video (Default settings: start 0, vol 0.3)
         output_filename = f"final_{task_id}.mp4"
         output_path = os.path.join("/tmp", output_filename)
-        mix_audio_video(video_path, music_path, output_path, start_time=0.0, audio_volume=0.3)
+        mix_audio_video(video_path, music_path, output_path, video_duration=10, audio_volume=0.3)
         
         # 4. Upload Result to R2
         final_object_name = f"final/{output_filename}"

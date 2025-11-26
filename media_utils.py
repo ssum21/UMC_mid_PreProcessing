@@ -43,7 +43,7 @@ def downsample_video(input_path: str, output_path: str, height: int = 360):
         raise
 
 #def mix_audio_video(video_path: str, audio_path: str, output_path: str, start_time: float = 0.0, audio_volume: float = 0.3):
-def run_ffmpeg_composite_audio(video_path: str, audio_path: str, output_path: str, video_duration: float, audio_volume: float = 0.):
+def mix_audio_video(video_path: str, audio_path: str, output_path: str, video_duration: float, audio_volume: float = 0.):
     """
     FFmpeg 명령줄과 동일한 로직을 ffmpeg-python 라이브러리로 구현합니다.
     (기존 영상 소리 유지 + 배경 음악 페이드 인/아웃 적용 및 믹싱)
