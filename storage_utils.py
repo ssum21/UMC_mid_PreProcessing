@@ -1,6 +1,9 @@
 import os
 import boto3
 from botocore.exceptions import NoCredentialsError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Cloudflare R2 Configuration
 R2_ENDPOINT_URL = os.environ.get("R2_ENDPOINT_URL")
